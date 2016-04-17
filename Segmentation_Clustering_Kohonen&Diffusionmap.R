@@ -28,7 +28,7 @@ getwd()
 #source("keys.R") # this files is where you put your Access Credentials from Bluemix (username and password)
 
 #### this is ONLY to get test data - this is NOT Kosher Stats method. Worst practices :)
-headcount <- 1000
+headcount <- 10000
 
 #### OK - let's begin - data is our population of 100o 
 x <- seq(0, 100, length=headcount)
@@ -77,7 +77,7 @@ plot(data)
 
 data.sc <- scale(data)
 set.seed(7)
-som_grid <- somgrid(xdim = 10, ydim=10, topo="rectangular")
+som_grid <- somgrid(xdim = 3, ydim=3, topo="rectangular")
 data.som <- som(data.sc,  grid = som_grid)
 plot(data.som, palette.name = coolBlueHotRed, main = "Voter Segmentation")
 
@@ -162,8 +162,45 @@ plot(dmap$X[,1],dmap$X[,2],col=data$silent_majority,pch=paste(data$silent_majori
 
 
 graphics.off()
+  
 
 
+
+
+#====
+graphics.off()
+par(mfrow=c(1,2))  
+data.sc <- scale(data)
+set.seed(7)
+som_grid <- somgrid(xdim = 3, ydim=3, topo="rectangular")
+data.som <- som(data.sc,  grid = som_grid)
+
+#pies
+plot(data.som, palette.name = coolBlueHotRed, main = paste("Voter Segmentation \n", dim(data)[1], "eligible voters"))
+#and count heatmap
+plot(data.som, type="count",palette.name = coolBlueHotRed, main = paste("Voter Segmentation \n eligible voters per group")) 
+
+dists <- unit.distances(data.som$grid, toroidal=TRUE)
+plot(data.som, type="property", property=dists[1,],
+     main="Distances to unit 1 (toroidal)", zlim=c(0,6),
+     palette = rainbow, ncolors = 7, contin = TRUE)
+dev.off()
+
+# ref: http://www.r-bloggers.com/self-organising-maps-for-customer-segmentation-using-r/
+par(mfrow=c(3,3))
+
+plot(data.som, type="codes") 
+
+## use hierarchical clustering to cluster the codebook vectors
+som_cluster <- cutree(hclust(dist(som_model$codes)), 6)
+plot(som_model, type="mapping", bgcol = pretty_palette[som_cluster], main = "Clusters") 
+add.cluster.boundaries(som_model, som_cluster)
+
+plot(data.som, type="count") 
+#plot(data.som, type="changes") 
+plot(data.som, type="dist.neighbours") 
+
+features <- dim(data.som$codes)[2]
 
 
 
